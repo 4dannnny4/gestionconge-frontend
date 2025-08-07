@@ -1,27 +1,152 @@
-# GestionCongeFrontend
+# Frontend Angular 18 - Gestion de Congés
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.20.
+Application frontend Angular 18 pour la gestion des demandes de congés, conçue pour fonctionner avec le backend Spring Boot.
 
-## Development server
+## 🚀 Installation rapide
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+### 1. Créer le projet
+```bash
+ng new gestion-conge-frontend --routing --style=css
+cd gestion-conge-frontend
+```
 
-## Code scaffolding
+### 2. Installer les dépendances
+```bash
+npm install bootstrap @fortawesome/fontawesome-free
+npm install jwt-decode
+ng add @angular/material
+```
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+### 3. Copier tous les fichiers
+Copiez tous les fichiers fournis dans leur structure respective selon l'arborescence.
 
-## Build
+### 4. Démarrer l'application
+```bash
+ng serve
+```
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+L'application sera disponible sur `http://localhost:4200`
 
-## Running unit tests
+## 🔑 Comptes de test
+- **Admin** : `admin` / `admin`
+- **Employé** : `employe` / `employe`
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+## 🏗️ Structure du projet
 
-## Running end-to-end tests
+```
+src/
+├── app/
+│   ├── core/
+│   │   ├── guards/         # Guards d'authentification et de rôles
+│   │   ├── interceptors/   # Interceptors HTTP
+│   │   ├── models/         # Interfaces TypeScript
+│   │   └── services/       # Services API
+│   ├── features/
+│   │   ├── auth/           # Connexion et inscription
+│   │   ├── dashboard/      # Tableau de bord
+│   │   └── demandes/       # Gestion des demandes
+│   ├── layout/             # Composants de mise en page
+│   ├── shared/             # Composants partagés
+│   └── app-routing.module.ts
+├── environments/           # Configuration d'environnement
+└── assets/
+```
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+## 📱 Fonctionnalités
 
-## Further help
+### ✅ Authentification
+- Connexion JWT avec rôles
+- Inscription d'utilisateurs
+- Protection des routes
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+### ✅ Dashboard
+- Statistiques en temps réel
+- Vue d'ensemble des demandes
+- Actions rapides
+
+### ✅ Gestion des demandes
+- Création de demandes de congés
+- Liste des demandes avec filtres
+- Modification et suppression
+
+### ✅ Interface utilisateur
+- Design responsive Bootstrap 5
+- Thème moderne avec dégradés
+- Icons FontAwesome
+- Animations CSS
+
+## 🔧 Configuration
+
+### Backend
+Assurez-vous que votre backend Spring Boot fonctionne sur :
+- **URL** : `http://localhost:8075`
+- **CORS** : Configuré pour `http://localhost:4200`
+
+### Environment
+Modifiez `src/environments/environment.ts` si nécessaire :
+```typescript
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:8075/api',
+  authUrl: 'http://localhost:8075/api/v1/auth'
+};
+```
+
+## 🛡️ Sécurité
+
+- JWT Tokens avec expiration
+- Guards pour protection des routes
+- Interceptors pour gestion d'erreurs
+- Validation côté client
+
+## 📦 Build et déploiement
+
+### Development
+```bash
+ng serve
+```
+
+### Production
+```bash
+ng build --prod
+```
+
+## 🔄 API Endpoints utilisés
+
+- `POST /api/v1/auth/login` - Connexion
+- `POST /api/v1/auth/register` - Inscription
+- `GET /api/demandeConges/get/list` - Liste des demandes
+- `POST /api/demandeConges/add` - Créer demande
+- `GET /api/typeConges/get/list` - Types de congés
+- `GET /api/users/get/list` - Liste utilisateurs
+
+## 🎨 Personnalisation
+
+### Thèmes
+Les couleurs principales sont définies dans `src/styles.css` :
+- Primaire : `#667eea` → `#764ba2`
+- Succès : `#4facfe` → `#00f2fe`
+- Attention : `#f093fb` → `#f5576c`
+
+### Composants
+Tous les composants sont modulaires et réutilisables.
+
+## 🤝 Compatibilité
+
+- **Angular** : 18.x
+- **Bootstrap** : 5.3+
+- **Node.js** : 18.x+
+- **TypeScript** : 5.4+
+
+## 📋 TODO
+
+- [ ] Module d'administration complet
+- [ ] Gestion des soldes de congés
+- [ ] Validation des demandes
+- [ ] Notifications en temps réel
+- [ ] Rapports et statistiques avancés
+- [ ] Tests unitaires
+
+---
+
+**Développé avec ❤️ pour la gestion moderne des congés**
