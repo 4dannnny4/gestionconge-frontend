@@ -1,0 +1,56 @@
+<div class="auth-layout">
+  <!-- Background avec gradient moderne -->
+  <div class="auth-background">
+    <div class="background-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+  </div>
+
+  <!-- Container principal -->
+  <div class="auth-container">
+    <!-- Carte d'authentification -->
+    <mat-card class="auth-card">
+      <!-- Header avec logo -->
+      <div class="auth-header">
+        <div class="logo-section">
+          <mat-icon class="logo-icon">work_outline</mat-icon>
+          <h1>Gestion des Congés</h1>
+        </div>
+        <p class="auth-subtitle">Accédez à votre espace personnel</p>
+      </div>
+
+      <!-- Contenu du formulaire -->
+      <div class="auth-content">
+        <router-outlet></router-outlet>
+      </div>
+
+      <!-- Footer -->
+      <div class="auth-footer">
+        <p>&copy; 2024 DXC Technology. Tous droits réservés.</p>
+      </div>
+    </mat-card>
+
+    <!-- Informations supplémentaires -->
+    <div class="auth-info">
+      <div class="info-card">
+        <mat-icon class="info-icon">security</mat-icon>
+        <h3>Sécurisé</h3>
+        <p>Vos données sont protégées par un chiffrement de niveau entreprise</p>
+      </div>
+      
+      <div class="info-card">
+        <mat-icon class="info-icon">speed</mat-icon>
+        <h3>Rapide</h3>
+        <p>Interface optimisée pour une expérience utilisateur fluide</p>
+      </div>
+      
+      <div class="info-card">
+        <mat-icon class="info-icon">support_agent</mat-icon>
+        <h3>Support</h3>
+        <p>Assistance technique disponible 24/7</p>
+      </div>
+    </div>
+  </div>
+</div>

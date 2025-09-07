@@ -1,0 +1,146 @@
+<div class="register-page">
+  <div class="register-container">
+    <!-- Header -->
+    <div class="register-header animate-fade-in-down">
+      <div class="logo-section">
+        <mat-icon class="logo-icon">business_center</mat-icon>
+        <h1 class="register-title gradient-text">Créer un compte</h1>
+        <p class="register-subtitle">Rejoignez la plateforme de gestion des congés</p>
+      </div>
+    </div>
+
+    <!-- Register Form -->
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+      <!-- Username Field -->
+      <div class="input-container animate-fade-in-up">
+        <div class="input-wrapper">
+          <mat-icon class="input-icon">person</mat-icon>
+          <input 
+            type="text" 
+            formControlName="username" 
+            placeholder="Nom d'utilisateur"
+            autocomplete="username"
+            class="modern-input">
+        </div>
+        <div class="input-error" *ngIf="registerForm.get('username')?.invalid && registerForm.get('username')?.touched">
+          Nom d'utilisateur requis (min. 3 caractères)
+        </div>
+      </div>
+
+      <!-- Email Field -->
+      <div class="input-container animate-fade-in-up">
+        <div class="input-wrapper">
+          <mat-icon class="input-icon">email</mat-icon>
+          <input 
+            type="email" 
+            formControlName="email" 
+            placeholder="votre@email.com"
+            autocomplete="email"
+            class="modern-input">
+        </div>
+        <div class="input-error" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+          Email valide requis
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="input-container animate-fade-in-up">
+        <div class="input-wrapper">
+          <mat-icon class="input-icon">lock</mat-icon>
+          <input 
+            type="password" 
+            formControlName="password" 
+            placeholder="Mot de passe"
+            autocomplete="new-password"
+            class="modern-input">
+        </div>
+        <div class="input-error" *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+          Mot de passe requis (min. 6 caractères)
+        </div>
+      </div>
+
+      <!-- Confirm Password Field -->
+      <div class="input-container animate-fade-in-up">
+        <div class="input-wrapper">
+          <mat-icon class="input-icon">lock</mat-icon>
+          <input 
+            type="password" 
+            formControlName="confirmPassword" 
+            placeholder="Confirmer le mot de passe"
+            autocomplete="new-password"
+            class="modern-input">
+        </div>
+        <div class="input-error" *ngIf="registerForm.errors?.['mismatch'] && registerForm.get('confirmPassword')?.touched">
+          Les mots de passe ne correspondent pas
+        </div>
+      </div>
+
+      <!-- Role Selection Field -->
+      <div class="input-container animate-fade-in-up">
+        <div class="role-selection-wrapper" (click)="toggleRoleDropdown()">
+          <mat-icon class="input-icon">work</mat-icon>
+          <div class="role-display">
+            <span *ngIf="!selectedRole" class="role-placeholder">Choisir votre rôle</span>
+            <div *ngIf="selectedRole" class="selected-role">
+              <mat-icon class="selected-role-icon">{{ getRoleIcon(selectedRole.nom) }}</mat-icon>
+              <span class="selected-role-name">{{ getRoleDisplayName(selectedRole.nom) }}</span>
+            </div>
+          </div>
+          <mat-icon class="dropdown-arrow" [class.rotated]="showRoleDropdown">keyboard_arrow_down</mat-icon>
+        </div>
+        
+        <!-- Dropdown Menu -->
+        <div class="role-dropdown" *ngIf="showRoleDropdown">
+          <div 
+            *ngFor="let role of availableRoles" 
+            class="role-option"
+            (click)="selectRole(role)">
+            <mat-icon class="role-option-icon">{{ getRoleIcon(role.nom) }}</mat-icon>
+            <div class="role-option-text">
+              <span class="role-name">{{ getRoleDisplayName(role.nom) }}</span>
+              <span class="role-description">{{ getRoleDescription(role.nom) }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="input-error" *ngIf="registerForm.get('role')?.invalid && registerForm.get('role')?.touched">
+          Veuillez choisir un rôle
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div class="error-message" *ngIf="error" class="animate-fade-in-up">
+        <mat-icon class="error-icon">error</mat-icon>
+        <span>{{ error }}</span>
+      </div>
+
+      <!-- Success Message -->
+      <div class="success-message" *ngIf="success" class="animate-fade-in-up">
+        <mat-icon class="success-icon">check_circle</mat-icon>
+        <span>{{ success }}</span>
+      </div>
+
+      <!-- Submit Button -->
+      <button mat-raised-button 
+              type="submit" 
+              class="register-button animate-fade-in-up"
+              [disabled]="loading || registerForm.invalid">
+        <mat-icon class="button-icon" *ngIf="!loading">person_add</mat-icon>
+        <mat-spinner diameter="20" *ngIf="loading" class="button-spinner"></mat-spinner>
+        <span>{{ loading ? 'Création...' : 'Créer le compte' }}</span>
+      </button>
+    </form>
+
+    <!-- Footer -->
+    <div class="register-footer animate-fade-in-up">
+      <div class="login-link">
+        <span>Déjà un compte ?</span>
+        <a routerLink="/auth/login" class="login-btn">Se connecter</a>
+      </div>
+      <p class="footer-text">
+        Système de gestion des congés v2.0
+        <span class="version-badge">Beta</span>
+      </p>
+    </div>
+  </div>
+</div>

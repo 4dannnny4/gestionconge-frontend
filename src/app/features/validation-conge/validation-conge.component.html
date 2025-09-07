@@ -1,0 +1,255 @@
+<div class="validation-container">
+  <!-- En-tête du composant -->
+  <div class="validation-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="validation-title">
+          <mat-icon class="title-icon">verified_user</mat-icon>
+          Validation des demandes de congé
+        </h1>
+        <p class="subtitle-text">
+          Gérez et validez les demandes de congés de votre équipe
+        </p>
+      </div>
+      <div class="stats-section">
+        <div class="stat-item">
+          <mat-icon class="stat-icon">pending</mat-icon>
+          <span class="stat-number">{{ demandes.length }}</span>
+          <span class="stat-label">En attente</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message d'erreur -->
+  <mat-card class="error-card" *ngIf="error">
+    <mat-card-content>
+      <div class="error-content">
+        <mat-icon class="error-icon">error</mat-icon>
+        <div class="error-text">
+          <h3>Erreur</h3>
+          <p>{{ error }}</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Message de succès -->
+  <mat-card class="success-card" *ngIf="success">
+    <mat-card-content>
+      <div class="success-content">
+        <mat-icon class="success-icon">check_circle</mat-icon>
+        <div class="success-text">
+          <h3>Succès</h3>
+          <p>{{ success }}</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Indicateur de chargement -->
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner diameter="60"></mat-spinner>
+    <p class="loading-text">Chargement des demandes...</p>
+  </div>
+
+  <!-- Contenu principal -->
+  <div *ngIf="!loading" class="validation-content">
+    
+    <!-- État vide -->
+    <mat-card class="empty-card" *ngIf="demandes.length === 0">
+      <mat-card-content>
+        <div class="empty-state">
+          <mat-icon class="empty-icon">inbox</mat-icon>
+          <h3>Aucune demande en attente</h3>
+          <p>Toutes les demandes ont été traitées. Aucune validation en attente.</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Liste des demandes -->
+    <mat-card class="demandes-card" *ngIf="demandes.length > 0">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>assignment_turned_in</mat-icon>
+          Demandes à valider
+        </mat-card-title>
+        <mat-card-subtitle>Cliquez sur une action pour valider ou rejeter</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="table-container">
+          <table mat-table [dataSource]="demandes" class="modern-table">
+            <!-- ID Column -->
+            <ng-container matColumnDef="id">
+              <th mat-header-cell *matHeaderCellDef>ID</th>
+              <td mat-cell *matCellDef="let demande">{{ demande.id }}</td>
+            </ng-container>
+
+            <!-- Utilisateur Column -->
+            <ng-container matColumnDef="user">
+              <th mat-header-cell *matHeaderCellDef>Demandeur</th>
+              <td mat-cell *matCellDef="let demande">
+                <div class="user-cell">
+                  <mat-icon class="user-icon">person</mat-icon>
+                  {{ getUserName(demande.userId!) }}
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Date début Column -->
+            <ng-container matColumnDef="dateDebut">
+              <th mat-header-cell *matHeaderCellDef>Date début</th>
+              <td mat-cell *matCellDef="let demande">
+                <div class="date-cell">
+                  <mat-icon class="date-icon">event_available</mat-icon>
+                  {{ demande.dateDebut | date:'dd/MM/yyyy' }}
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Date fin Column -->
+            <ng-container matColumnDef="dateFin">
+              <th mat-header-cell *matHeaderCellDef>Date fin</th>
+              <td mat-cell *matCellDef="let demande">
+                <div class="date-cell">
+                  <mat-icon class="date-icon">event_busy</mat-icon>
+                  {{ demande.dateFin | date:'dd/MM/yyyy' }}
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Durée Column -->
+            <ng-container matColumnDef="duree">
+              <th mat-header-cell *matHeaderCellDef>Durée</th>
+              <td mat-cell *matCellDef="let demande">
+                <mat-chip class="duration-chip">
+                  <mat-icon matChipAvatar>schedule</mat-icon>
+                  {{ calculerJoursOuvres(demande.dateDebut, demande.dateFin) }} jour(s)
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <!-- Type Column -->
+            <ng-container matColumnDef="type">
+              <th mat-header-cell *matHeaderCellDef>Type</th>
+              <td mat-cell *matCellDef="let demande">
+                <div class="type-cell">
+                  <mat-icon class="type-icon">event</mat-icon>
+                  {{ demande.type.nom }}
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Commentaire Column -->
+            <ng-container matColumnDef="commentaire">
+              <th mat-header-cell *matHeaderCellDef>Commentaire</th>
+              <td mat-cell *matCellDef="let demande">
+                <div class="comment-cell">
+                  {{ demande.commentaire || '-' }}
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let demande">
+                <div class="actions-cell">
+                  <button mat-raised-button 
+                          color="primary" 
+                          (click)="accepter(demande)"
+                          class="accept-btn">
+                    <mat-icon>check</mat-icon>
+                    Accepter
+                  </button>
+                  <button mat-raised-button 
+                          color="warn" 
+                          (click)="refuser(demande)"
+                          class="reject-btn">
+                    <mat-icon>close</mat-icon>
+                    Rejeter
+                  </button>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Modal de validation -->
+  <div class="modal-overlay" *ngIf="showValidationModal" (click)="closeValidationModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Validation de la demande</h2>
+        <button mat-icon-button (click)="closeValidationModal()" class="close-btn">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      
+      <div class="modal-body" *ngIf="selectedDemande">
+        <div class="demande-info">
+          <div class="info-row">
+            <span class="info-label">Demandeur:</span>
+            <span class="info-value">{{ getUserName(selectedDemande.userId!) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Période:</span>
+            <span class="info-value">
+              {{ selectedDemande.dateDebut | date:'dd/MM/yyyy' }} - {{ selectedDemande.dateFin | date:'dd/MM/yyyy' }}
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Durée:</span>
+            <span class="info-value">{{ calculerJoursOuvres(selectedDemande.dateDebut, selectedDemande.dateFin) }} jour(s)</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Type:</span>
+            <span class="info-value">{{ selectedDemande.type.nom }}</span>
+          </div>
+          <div class="info-row" *ngIf="selectedDemande.commentaire">
+            <span class="info-label">Commentaire:</span>
+            <span class="info-value">{{ selectedDemande.commentaire }}</span>
+          </div>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Commentaire de validation</mat-label>
+          <textarea matInput 
+                    [(ngModel)]="validationComment" 
+                    rows="3"
+                    placeholder="Ajoutez un commentaire (obligatoire pour le rejet)"></textarea>
+        </mat-form-field>
+      </div>
+
+      <div class="modal-actions">
+        <button mat-stroked-button (click)="closeValidationModal()" class="cancel-btn">
+          <mat-icon>close</mat-icon>
+          Annuler
+        </button>
+        <button mat-raised-button 
+                color="primary" 
+                (click)="validerDemande()"
+                [disabled]="loading"
+                class="validate-btn">
+          <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
+          <mat-icon *ngIf="!loading">check</mat-icon>
+          Valider
+        </button>
+        <button mat-raised-button 
+                color="warn" 
+                (click)="rejeterDemande()"
+                [disabled]="loading || !validationComment.trim()"
+                class="reject-btn">
+          <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
+          <mat-icon *ngIf="!loading">close</mat-icon>
+          Rejeter
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

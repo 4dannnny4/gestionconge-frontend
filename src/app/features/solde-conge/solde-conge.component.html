@@ -1,0 +1,26 @@
+<div class="container mt-4">
+  <h2>Liste des soldes de congé</h2>
+  <div class="table-responsive" *ngIf="soldes.length > 0; else noSolde">
+    <table class="table table-bordered table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Total Annuel</th>
+          <th>Restant</th>
+          <th>Utilisé</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let solde of soldes">
+          <td>{{ solde.id }}</td>
+          <td>{{ solde.totalAnnuel }}</td>
+          <td>{{ solde.restant }}</td>
+          <td>{{ solde.utilise }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <ng-template #noSolde>
+    <div class="alert alert-info mt-3">Aucun solde de congé trouvé.</div>
+  </ng-template>
+</div>

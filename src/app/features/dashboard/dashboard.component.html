@@ -1,0 +1,289 @@
+<div class="dashboard-container">
+  <!-- En-tête du tableau de bord -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <div class="welcome-section">
+        <h1 class="dashboard-title">
+          <mat-icon class="title-icon">dashboard</mat-icon>
+          Tableau de bord
+        </h1>
+        <p class="welcome-text">
+          Bienvenue, <span class="username">{{ currentUser?.username }}</span> !
+        </p>
+      </div>
+      <div class="user-role-badge">
+        <mat-chip-set>
+          <mat-chip [class]="getRoleChipClass()">
+            <mat-icon matChipAvatar>{{ getRoleIcon() }}</mat-icon>
+            {{ getRoleDisplayName() }}
+          </mat-chip>
+        </mat-chip-set>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message d'erreur -->
+  <mat-card class="error-card" *ngIf="error">
+    <mat-card-content>
+      <div class="error-content">
+        <mat-icon class="error-icon">error</mat-icon>
+        <div class="error-text">
+          <h3>Erreur lors du chargement des données</h3>
+          <p>{{ error }}</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Indicateur de chargement -->
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner diameter="60"></mat-spinner>
+    <p class="loading-text">Chargement des données...</p>
+  </div>
+
+  <!-- Bouton de test API -->
+  <div class="test-api-section" *ngIf="!loading">
+    <button mat-raised-button color="accent" (click)="testApiConnection()">
+      <mat-icon>bug_report</mat-icon>
+      Tester la connexion API
+    </button>
+  </div>
+
+  <!-- Contenu principal -->
+  <div *ngIf="!loading" class="dashboard-content">
+    
+    <!-- Statistiques principales -->
+    <div class="stats-grid">
+      <mat-card class="stat-card stat-primary">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-info">
+              <h2 class="stat-number">{{ stats.totalDemandes }}</h2>
+              <p class="stat-label">Total demandes</p>
+            </div>
+            <div class="stat-icon">
+              <mat-icon>event</mat-icon>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card stat-warning">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-info">
+              <h2 class="stat-number">{{ stats.demandesEnAttente }}</h2>
+              <p class="stat-label">En attente</p>
+            </div>
+            <div class="stat-icon">
+              <mat-icon>schedule</mat-icon>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card stat-success">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-info">
+              <h2 class="stat-number">{{ stats.demandesAcceptees }}</h2>
+              <p class="stat-label">Acceptées</p>
+            </div>
+            <div class="stat-icon">
+              <mat-icon>check_circle</mat-icon>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card stat-error">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-info">
+              <h2 class="stat-number">{{ stats.demandesRejetees }}</h2>
+              <p class="stat-label">Rejetées</p>
+            </div>
+            <div class="stat-icon">
+              <mat-icon>cancel</mat-icon>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Actions rapides -->
+    <mat-card class="actions-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>flash_on</mat-icon>
+          Actions rapides
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="actions-grid">
+          <!-- Actions pour les employés -->
+          <button mat-raised-button 
+                  color="primary" 
+                  class="action-button"
+                  *ngIf="isEmployee()"
+                  (click)="createDemande()">
+            <mat-icon>add</mat-icon>
+            Nouvelle demande
+          </button>
+          
+          <button mat-stroked-button 
+                  color="primary" 
+                  class="action-button"
+                  *ngIf="isEmployee()"
+                  (click)="goToDemandes()">
+            <mat-icon>list</mat-icon>
+            Mes demandes
+          </button>
+
+          <!-- Actions pour les managers -->
+          <button mat-raised-button 
+                  color="accent" 
+                  class="action-button"
+                  *ngIf="isManager()"
+                  (click)="goToValidation()">
+            <mat-icon>check_circle</mat-icon>
+            Valider demandes
+          </button>
+
+          <!-- Actions pour les RH -->
+          <button mat-raised-button 
+                  color="primary" 
+                  class="action-button"
+                  *ngIf="isRH()"
+                  (click)="goToRHDashboard()">
+            <mat-icon>analytics</mat-icon>
+            Tableau de bord RH
+          </button>
+
+          <button mat-stroked-button 
+                  color="primary" 
+                  class="action-button"
+                  (click)="goToDemandes()">
+            <mat-icon>list_alt</mat-icon>
+            Voir toutes les demandes
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Solde de congés (pour les employés) -->
+    <mat-card class="balance-card" *ngIf="isEmployee() && userSolde">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>account_balance_wallet</mat-icon>
+          Mon solde de congés
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="balance-grid">
+          <div class="balance-item">
+            <div class="balance-number balance-total">{{ userSolde.totalAnnuel }}</div>
+            <div class="balance-label">Total annuel</div>
+          </div>
+          <div class="balance-item">
+            <div class="balance-number balance-remaining">{{ userSolde.restant }}</div>
+            <div class="balance-label">Jours restants</div>
+          </div>
+          <div class="balance-item">
+            <div class="balance-number balance-used">{{ userSolde.utilise }}</div>
+            <div class="balance-label">Jours utilisés</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Demandes récentes -->
+    <mat-card class="recent-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>history</mat-icon>
+          Demandes récentes
+        </mat-card-title>
+        <mat-card-subtitle>Vos dernières demandes de congés</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="recentDemandes.length === 0" class="empty-state">
+          <mat-icon class="empty-icon">inbox</mat-icon>
+          <h3>Aucune demande trouvée</h3>
+          <p>Vous n'avez pas encore de demandes de congés.</p>
+          <button mat-raised-button color="primary" (click)="createDemande()" *ngIf="isEmployee()">
+            <mat-icon>add</mat-icon>
+            Créer ma première demande
+          </button>
+        </div>
+        
+        <div *ngIf="recentDemandes.length > 0" class="table-container">
+          <table mat-table [dataSource]="recentDemandes" class="modern-table">
+            <!-- Type Column -->
+            <ng-container matColumnDef="type">
+              <th mat-header-cell *matHeaderCellDef>Type</th>
+              <td mat-cell *matCellDef="let demande">
+                <div class="type-cell">
+                  <mat-icon class="type-icon">event</mat-icon>
+                  {{ demande.type.nom || 'N/A' }}
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Date début Column -->
+            <ng-container matColumnDef="dateDebut">
+              <th mat-header-cell *matHeaderCellDef>Date début</th>
+              <td mat-cell *matCellDef="let demande">
+                <div class="date-cell">
+                  <mat-icon class="date-icon">event_available</mat-icon>
+                  {{ demande.dateDebut | date:'dd/MM/yyyy' }}
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Date fin Column -->
+            <ng-container matColumnDef="dateFin">
+              <th mat-header-cell *matHeaderCellDef>Date fin</th>
+              <td mat-cell *matCellDef="let demande">
+                <div class="date-cell">
+                  <mat-icon class="date-icon">event_busy</mat-icon>
+                  {{ demande.dateFin | date:'dd/MM/yyyy' }}
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Statut Column -->
+            <ng-container matColumnDef="statut">
+              <th mat-header-cell *matHeaderCellDef>Statut</th>
+              <td mat-cell *matCellDef="let demande">
+                <mat-chip [class]="getStatusChipClass(demande.statut!)">
+                  <mat-icon matChipAvatar>{{ getStatusIcon(demande.statut!) }}</mat-icon>
+                  {{ getStatusText(demande.statut!) }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <!-- Commentaire Column -->
+            <ng-container matColumnDef="commentaire">
+              <th mat-header-cell *matHeaderCellDef>Commentaire</th>
+              <td mat-cell *matCellDef="let demande">
+                <div class="comment-cell">
+                  {{ demande.commentaire || '-' }}
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
+          </table>
+        </div>
+      </mat-card-content>
+      <mat-card-actions *ngIf="recentDemandes.length > 0">
+        <button mat-button color="primary" (click)="goToDemandes()">
+          <mat-icon>visibility</mat-icon>
+          Voir toutes les demandes
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

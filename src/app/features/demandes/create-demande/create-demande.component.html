@@ -1,0 +1,151 @@
+<div class="create-demande-page">
+  <div class="create-demande-container">
+    <!-- Header -->
+    <div class="create-header animate-fade-in-down">
+      <div class="logo-section">
+        <mat-icon class="logo-icon">event_available</mat-icon>
+        <h1 class="create-title gradient-text">Nouvelle demande de congé</h1>
+        <p class="create-subtitle">Créez une nouvelle demande de congé en quelques étapes</p>
+      </div>
+    </div>
+
+    <!-- Create Form -->
+    <form [formGroup]="demandeForm" (ngSubmit)="onSubmit()" class="create-form">
+      
+      <!-- Type de congé -->
+      <div class="input-container animate-fade-in-up">
+        <div class="input-wrapper">
+          <mat-icon class="input-icon">event</mat-icon>
+          <select formControlName="typeId" class="modern-input">
+            <option value="">Sélectionnez un type de congé</option>
+            <option *ngFor="let type of typesConge" [value]="type.id">
+              {{ type.nom }}
+              <span *ngIf="type.description"> - {{ type.description }}</span>
+            </option>
+          </select>
+        </div>
+        <div class="input-error" *ngIf="demandeForm.get('typeId')?.invalid && demandeForm.get('typeId')?.touched">
+          Veuillez sélectionner un type de congé
+        </div>
+      </div>
+
+      <!-- Date de début -->
+      <div class="input-container animate-fade-in-up">
+        <div class="input-wrapper">
+          <mat-icon class="input-icon">event_available</mat-icon>
+          <input 
+            type="date" 
+            formControlName="dateDebut" 
+            class="modern-input">
+        </div>
+        <div class="input-error" *ngIf="demandeForm.errors?.['dateDebutPassed'] && demandeForm.get('dateDebut')?.touched">
+          La date de début ne peut pas être dans le passé
+        </div>
+        <div class="input-error" *ngIf="demandeForm.get('dateDebut')?.invalid && demandeForm.get('dateDebut')?.touched && !demandeForm.errors?.['dateDebutPassed']">
+          Date de début requise
+        </div>
+      </div>
+
+      <!-- Date de fin -->
+      <div class="input-container animate-fade-in-up">
+        <div class="input-wrapper">
+          <mat-icon class="input-icon">event_busy</mat-icon>
+          <input 
+            type="date" 
+            formControlName="dateFin" 
+            class="modern-input">
+        </div>
+        <div class="input-error" *ngIf="demandeForm.errors?.['dateFinInvalid'] && demandeForm.get('dateFin')?.touched">
+          La date de fin doit être après la date de début
+        </div>
+        <div class="input-error" *ngIf="demandeForm.get('dateFin')?.invalid && demandeForm.get('dateFin')?.touched && !demandeForm.errors?.['dateFinInvalid']">
+          Date de fin requise
+        </div>
+      </div>
+
+      <!-- Durée calculée -->
+      <div class="duration-display animate-fade-in-up" *ngIf="calculateDuration() > 0">
+        <div class="duration-wrapper">
+          <mat-icon class="duration-icon">schedule</mat-icon>
+          <div class="duration-info">
+            <span class="duration-label">Durée calculée</span>
+            <span class="duration-value">{{ calculateDuration() }} jour(s) ouvrés</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Commentaire -->
+      <div class="input-container animate-fade-in-up">
+        <div class="input-wrapper textarea-wrapper">
+          <mat-icon class="input-icon">comment</mat-icon>
+          <textarea 
+            formControlName="commentaire" 
+            placeholder="Motif ou informations complémentaires (optionnel)"
+            rows="3"
+            class="modern-input textarea-input"></textarea>
+        </div>
+      </div>
+
+      <!-- Messages d'erreur -->
+      <div class="error-message animate-fade-in-up" *ngIf="error">
+        <mat-icon class="error-icon">error</mat-icon>
+        <span>{{ error }}</span>
+      </div>
+
+      <!-- Messages de succès -->
+      <div class="success-message animate-fade-in-up" *ngIf="success">
+        <mat-icon class="success-icon">check_circle</mat-icon>
+        <span>{{ success }}</span>
+      </div>
+
+      <!-- Boutons d'action -->
+      <div class="form-actions animate-fade-in-up">
+        <button mat-stroked-button 
+                type="button" 
+                (click)="cancel()" 
+                [disabled]="loading"
+                class="cancel-button">
+          <mat-icon>close</mat-icon>
+          Annuler
+        </button>
+        
+        <button mat-raised-button 
+                type="submit" 
+                [disabled]="loading || demandeForm.invalid"
+                class="create-button">
+          <mat-spinner diameter="20" *ngIf="loading" class="button-spinner"></mat-spinner>
+          <mat-icon *ngIf="!loading" class="button-icon">save</mat-icon>
+          <span>{{ loading ? 'Création...' : 'Créer la demande' }}</span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Footer -->
+    <div class="create-footer animate-fade-in-up">
+      <div class="info-section">
+        <h3 class="info-title">
+          <mat-icon class="info-title-icon">info</mat-icon>
+          Informations importantes
+        </h3>
+        <div class="info-list">
+          <div class="info-item">
+            <mat-icon class="info-icon">verified_user</mat-icon>
+            <span>Les demandes sont soumises à validation hiérarchique</span>
+          </div>
+          <div class="info-item">
+            <mat-icon class="info-icon">edit</mat-icon>
+            <span>Vous pouvez modifier une demande tant qu'elle n'est pas validée</span>
+          </div>
+          <div class="info-item">
+            <mat-icon class="info-icon">schedule</mat-icon>
+            <span>Les congés doivent être demandés avec un préavis suffisant</span>
+          </div>
+          <div class="info-item">
+            <mat-icon class="info-icon">account_balance_wallet</mat-icon>
+            <span>Vérifiez votre solde de congés avant de faire une demande</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

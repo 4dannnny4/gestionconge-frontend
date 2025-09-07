@@ -1,0 +1,238 @@
+<div class="main-layout">
+  <!-- Sidebar moderne avec design minimaliste -->
+  <mat-sidenav-container class="sidenav-container">
+    <mat-sidenav #drawer class="sidenav modern-navbar" fixedInViewport
+                 [attr.role]="'navigation'"
+                 [mode]="'side'"
+                 [opened]="true">
+      
+      <!-- Header compact -->
+      <div class="navbar-header">
+        <div class="brand-section">
+          <div class="brand-icon">
+            <mat-icon>business_center</mat-icon>
+          </div>
+          <div class="brand-text">
+            <h2>Gestion Congés</h2>
+            <span>v2.0</span>
+          </div>
+        </div>
+        
+        <!-- User Profile Compact -->
+        <div class="user-profile" *ngIf="authService.isAuthenticated()">
+          <div class="user-avatar">
+            <mat-icon>person</mat-icon>
+          </div>
+          <div class="user-info">
+            <span class="user-name">{{ authService.getCurrentUser()?.username }}</span>
+            <span class="user-role">{{ getFirstRole() }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Menu moderne -->
+      <div class="nav-menu">
+        <!-- Section principale -->
+        <div class="nav-section">
+          <div class="section-label">Navigation</div>
+          
+          <a routerLink="/dashboard" routerLinkActive="active" class="nav-item" (click)="drawer.close()">
+            <div class="nav-icon">
+              <mat-icon>dashboard</mat-icon>
+            </div>
+            <span class="nav-text">Dashboard</span>
+            <div class="nav-indicator"></div>
+          </a>
+
+          <a routerLink="/demandes" routerLinkActive="active" class="nav-item" (click)="drawer.close()">
+            <div class="nav-icon">
+              <mat-icon>event_note</mat-icon>
+            </div>
+            <span class="nav-text">Mes Demandes</span>
+            <div class="nav-indicator"></div>
+          </a>
+
+          <a routerLink="/demandes/create" routerLinkActive="active" class="nav-item" (click)="drawer.close()">
+            <div class="nav-icon">
+              <mat-icon>add_circle_outline</mat-icon>
+            </div>
+            <span class="nav-text">Nouvelle Demande</span>
+            <div class="nav-indicator"></div>
+          </a>
+        </div>
+
+        <!-- Section Management -->
+        <div class="nav-section" *ngIf="authService.hasRole('ROLE_MANAGER') || authService.hasRole('ROLE_RH')">
+          <div class="section-label">Gestion</div>
+          
+          <a routerLink="/validation" routerLinkActive="active" class="nav-item" (click)="drawer.close()">
+            <div class="nav-icon">
+              <mat-icon>verified_user</mat-icon>
+            </div>
+            <span class="nav-text">Validation</span>
+            <div class="nav-badge" *ngIf="pendingCount > 0">{{ pendingCount }}</div>
+            <div class="nav-indicator"></div>
+          </a>
+
+          <a routerLink="/rh/dashboard" routerLinkActive="active" class="nav-item" (click)="drawer.close()" 
+             *ngIf="authService.hasRole('ROLE_RH')">
+            <div class="nav-icon">
+              <mat-icon>analytics</mat-icon>
+            </div>
+            <span class="nav-text">RH Dashboard</span>
+            <div class="nav-indicator"></div>
+          </a>
+
+          <a routerLink="/reports" routerLinkActive="active" class="nav-item" (click)="drawer.close()"
+             *ngIf="authService.hasRole('ROLE_RH') || authService.hasRole('ROLE_MANAGER')">
+            <div class="nav-icon">
+              <mat-icon>assessment</mat-icon>
+            </div>
+            <span class="nav-text">Rapports</span>
+            <div class="nav-indicator"></div>
+          </a>
+        </div>
+
+        <!-- Section Compte -->
+        <div class="nav-section">
+          <div class="section-label">Compte</div>
+          
+          <a routerLink="/profile" routerLinkActive="active" class="nav-item" (click)="drawer.close()">
+            <div class="nav-icon">
+              <mat-icon>person_outline</mat-icon>
+            </div>
+            <span class="nav-text">Profil</span>
+            <div class="nav-indicator"></div>
+          </a>
+
+          <a routerLink="/settings" routerLinkActive="active" class="nav-item" (click)="drawer.close()">
+            <div class="nav-icon">
+              <mat-icon>settings_outlined</mat-icon>
+            </div>
+            <span class="nav-text">Paramètres</span>
+            <div class="nav-indicator"></div>
+          </a>
+
+          <a (click)="logout()" class="nav-item logout-item">
+            <div class="nav-icon">
+              <mat-icon>logout</mat-icon>
+            </div>
+            <span class="nav-text">Déconnexion</span>
+            <div class="nav-indicator"></div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Footer minimaliste -->
+      <div class="navbar-footer">
+        <div class="footer-content">
+          <span class="copyright">© 2024 DXC</span>
+          <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span>En ligne</span>
+          </div>
+        </div>
+      </div>
+    </mat-sidenav>
+
+    <!-- Main Content Area -->
+    <mat-sidenav-content class="main-content">
+      <!-- Top Toolbar avec navbar horizontale -->
+      <mat-toolbar class="main-toolbar">
+        <div class="toolbar-content">
+          <!-- Mobile menu button -->
+          <button mat-icon-button (click)="drawer.toggle()" class="mobile-menu-btn">
+            <mat-icon>menu</mat-icon>
+          </button>
+
+          <!-- Logo/Brand -->
+          <div class="brand-logo">
+            <mat-icon class="logo-icon">business_center</mat-icon>
+            <span class="brand-name">Gestion Congés</span>
+          </div>
+
+          <!-- Navigation horizontale -->
+          <nav class="header-navbar">
+            <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
+              <span>Dashboard</span>
+            </a>
+            
+            <a routerLink="/demandes" routerLinkActive="active" class="nav-link">
+              <span>Demandes</span>
+            </a>
+            
+            <a routerLink="/demandes/create" routerLinkActive="active" class="nav-link" 
+               *ngIf="authService.hasRole('ROLE_EMPLOYEE')">
+              <span>Nouvelle</span>
+            </a>
+            
+            <a routerLink="/validation" routerLinkActive="active" class="nav-link"
+               *ngIf="authService.hasRole('ROLE_MANAGER') || authService.hasRole('ROLE_RH')">
+              <span>Validation</span>
+              <div class="nav-badge" *ngIf="pendingCount > 0">{{ pendingCount }}</div>
+            </a>
+            
+            <a routerLink="/rh/dashboard" routerLinkActive="active" class="nav-link"
+               *ngIf="authService.hasRole('ROLE_RH')">
+              <span>RH</span>
+            </a>
+            
+            <a routerLink="/reports" routerLinkActive="active" class="nav-link"
+               *ngIf="authService.hasRole('ROLE_RH') || authService.hasRole('ROLE_MANAGER')">
+              <span>Rapports</span>
+            </a>
+          </nav>
+
+          <!-- Toolbar Actions -->
+          <div class="toolbar-actions">
+            <!-- Notifications -->
+            <button mat-icon-button class="action-btn" [matBadge]="pendingCount" 
+                    matBadgeColor="warn" matBadgeSize="small">
+              <mat-icon>notifications</mat-icon>
+            </button>
+
+            <!-- User Menu -->
+            <button mat-icon-button [matMenuTriggerFor]="userMenu" class="action-btn user-menu-btn">
+              <div class="user-avatar-small">
+                <mat-icon>account_circle</mat-icon>
+              </div>
+            </button>
+
+            <mat-menu #userMenu="matMenu" class="user-menu">
+              <div class="user-menu-header">
+                <div class="user-info-compact">
+                  <div class="user-avatar-menu">
+                    <mat-icon>account_circle</mat-icon>
+                  </div>
+                  <div class="user-details-menu">
+                    <span class="username-menu">{{ authService.getCurrentUser()?.username }}</span>
+                    <span class="user-role-menu">{{ getFirstRole() }}</span>
+                  </div>
+                </div>
+              </div>
+              <mat-divider></mat-divider>
+              <button mat-menu-item routerLink="/profile">
+                <mat-icon>person</mat-icon>
+                <span>Mon Profil</span>
+              </button>
+              <button mat-menu-item routerLink="/settings">
+                <mat-icon>settings</mat-icon>
+                <span>Paramètres</span>
+              </button>
+              <mat-divider></mat-divider>
+              <button mat-menu-item (click)="logout()">
+                <mat-icon>logout</mat-icon>
+                <span>Déconnexion</span>
+              </button>
+            </mat-menu>
+          </div>
+        </div>
+      </mat-toolbar>
+
+      <!-- Main Content avec animation -->
+      <div class="content-wrapper animate-fade-in-up">
+        <router-outlet></router-outlet>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

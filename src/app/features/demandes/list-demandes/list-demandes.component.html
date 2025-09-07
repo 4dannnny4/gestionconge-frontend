@@ -1,0 +1,249 @@
+
+<div class="demandes-container">
+  <!-- En-tête du composant -->
+  <div class="demandes-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="demandes-title">
+          <mat-icon class="title-icon">event_note</mat-icon>
+          Mes demandes de congés
+        </h1>
+        <p class="subtitle-text">
+          Gérez vos demandes de congés et suivez leur statut
+        </p>
+      </div>
+      <div class="action-section">
+        <button mat-raised-button color="primary" class="create-button" (click)="createNewDemande()">
+          <mat-icon>add</mat-icon>
+          Nouvelle demande
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message d'erreur -->
+  <mat-card class="error-card" *ngIf="error">
+    <mat-card-content>
+      <div class="error-content">
+        <mat-icon class="error-icon">error</mat-icon>
+        <div class="error-text">
+          <h3>Erreur lors du chargement des demandes</h3>
+          <p>{{ error }}</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Indicateur de chargement -->
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner diameter="60"></mat-spinner>
+    <p class="loading-text">Chargement des demandes...</p>
+  </div>
+
+  <!-- Contenu principal -->
+  <div *ngIf="!loading && !error" class="demandes-content">
+    
+    <!-- Statistiques principales -->
+    <div class="stats-grid" *ngIf="demandes.length > 0">
+      <mat-card class="stat-card stat-primary">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-info">
+              <h2 class="stat-number">{{ demandes.length }}</h2>
+              <p class="stat-label">Total demandes</p>
+            </div>
+            <div class="stat-icon">
+              <mat-icon>event</mat-icon>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card stat-warning">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-info">
+              <h2 class="stat-number">{{ getDemandesEnAttente() }}</h2>
+              <p class="stat-label">En attente</p>
+            </div>
+            <div class="stat-icon">
+              <mat-icon>schedule</mat-icon>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card stat-success">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-info">
+              <h2 class="stat-number">{{ getDemandesAcceptees() }}</h2>
+              <p class="stat-label">Acceptées</p>
+            </div>
+            <div class="stat-icon">
+              <mat-icon>check_circle</mat-icon>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card stat-error">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-info">
+              <h2 class="stat-number">{{ getDemandesRejetees() }}</h2>
+              <p class="stat-label">Rejetées</p>
+            </div>
+            <div class="stat-icon">
+              <mat-icon>cancel</mat-icon>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Liste des demandes -->
+    <mat-card class="demandes-card" *ngIf="demandes.length > 0; else noDemandes">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>list_alt</mat-icon>
+          Liste des demandes
+        </mat-card-title>
+        <mat-card-subtitle>Vos demandes de congés</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="table-container">
+          <table mat-table [dataSource]="demandes" class="modern-table">
+            <!-- ID Column -->
+            <ng-container matColumnDef="id">
+              <th mat-header-cell *matHeaderCellDef>ID</th>
+              <td mat-cell *matCellDef="let demande">{{ demande.id }}</td>
+            </ng-container>
+
+            <!-- Date début Column -->
+            <ng-container matColumnDef="dateDebut">
+              <th mat-header-cell *matHeaderCellDef>Date début</th>
+              <td mat-cell *matCellDef="let demande">
+                <div class="date-cell">
+                  <mat-icon class="date-icon">event_available</mat-icon>
+                  {{ demande.dateDebut | date:'dd/MM/yyyy' }}
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Date fin Column -->
+            <ng-container matColumnDef="dateFin">
+              <th mat-header-cell *matHeaderCellDef>Date fin</th>
+              <td mat-cell *matCellDef="let demande">
+                <div class="date-cell">
+                  <mat-icon class="date-icon">event_busy</mat-icon>
+                  {{ demande.dateFin | date:'dd/MM/yyyy' }}
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Durée Column -->
+            <ng-container matColumnDef="duree">
+              <th mat-header-cell *matHeaderCellDef>Durée</th>
+              <td mat-cell *matCellDef="let demande">
+                <mat-chip class="duration-chip">
+                  <mat-icon matChipAvatar>schedule</mat-icon>
+                  {{ calculateDuration(demande.dateDebut, demande.dateFin) }} jour(s)
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <!-- Type Column -->
+            <ng-container matColumnDef="type">
+              <th mat-header-cell *matHeaderCellDef>Type</th>
+              <td mat-cell *matCellDef="let demande">
+                <div class="type-cell">
+                  <mat-icon class="type-icon">event</mat-icon>
+                  {{ demande.type.nom || 'N/A' }}
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Statut Column -->
+            <ng-container matColumnDef="statut">
+              <th mat-header-cell *matHeaderCellDef>Statut</th>
+              <td mat-cell *matCellDef="let demande">
+                <mat-chip [class]="getStatusChipClass(demande.statut!)">
+                  <mat-icon matChipAvatar>{{ getStatusIcon(demande.statut!) }}</mat-icon>
+                  {{ getStatusText(demande.statut!) }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <!-- Commentaire Column -->
+            <ng-container matColumnDef="commentaire">
+              <th mat-header-cell *matHeaderCellDef>Commentaire</th>
+              <td mat-cell *matCellDef="let demande">
+                <div class="comment-cell">
+                  {{ demande.commentaire || '-' }}
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let demande">
+                <div class="actions-cell">
+                  <button mat-icon-button 
+                          color="primary" 
+                          (click)="editDemande(demande.id!)"
+                          [disabled]="demande.statut !== 'EnAttente'"
+                          matTooltip="Modifier">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button 
+                          color="warn" 
+                          (click)="deleteDemande(demande.id!)"
+                          [disabled]="demande.statut === 'Accepte'"
+                          matTooltip="Supprimer">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- État vide -->
+    <mat-card class="empty-card" *ngIf="demandes.length === 0">
+      <mat-card-content>
+        <div class="empty-state">
+          <mat-icon class="empty-icon">inbox</mat-icon>
+          <h3>Aucune demande trouvée</h3>
+          <p>Vous n'avez pas encore de demandes de congés.</p>
+          <button mat-raised-button color="primary" (click)="createNewDemande()">
+            <mat-icon>add</mat-icon>
+            Créer ma première demande
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <ng-template #noDemandes>
+      <mat-card class="empty-card">
+        <mat-card-content>
+          <div class="empty-state">
+            <mat-icon class="empty-icon">inbox</mat-icon>
+            <h3>Aucune demande trouvée</h3>
+            <p>Vous n'avez pas encore de demandes de congés.</p>
+            <button mat-raised-button color="primary" (click)="createNewDemande()">
+              <mat-icon>add</mat-icon>
+              Créer ma première demande
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </ng-template>
+  </div>
+</div>

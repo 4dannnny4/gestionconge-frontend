@@ -1,0 +1,136 @@
+<div class="login-container">
+  <!-- Background Effects -->
+  <div class="background-effects">
+    <div class="floating-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+      <div class="shape shape-4"></div>
+      <div class="shape shape-5"></div>
+    </div>
+  </div>
+
+  <!-- Main Login Card -->
+  <div class="login-card glass-effect-strong animate-scale-in">
+    <!-- Header -->
+    <div class="login-header">
+      <div class="logo-container">
+        <div class="logo-icon-container">
+          <mat-icon class="logo-icon floating">work_outline</mat-icon>
+          <div class="logo-glow"></div>
+        </div>
+        <h1 class="login-title gradient-text">Connexion</h1>
+        <p class="login-subtitle">Connectez-vous à votre compte pour accéder à vos congés</p>
+      </div>
+    </div>
+
+    <!-- Login Form -->
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <!-- Username Field -->
+      <div class="input-container animate-fade-in-up">
+        <div class="input-wrapper">
+          <mat-icon class="input-icon">person</mat-icon>
+          <input 
+            type="text" 
+            formControlName="username" 
+            placeholder="Nom d'utilisateur"
+            autocomplete="username"
+            class="modern-input">
+        </div>
+        <div class="input-error" *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
+          Le nom d'utilisateur est requis
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="input-container animate-fade-in-up">
+        <div class="input-wrapper">
+          <mat-icon class="input-icon">lock</mat-icon>
+          <input 
+            [type]="hidePassword ? 'password' : 'text'" 
+            formControlName="password" 
+            placeholder="Mot de passe"
+            autocomplete="current-password"
+            class="modern-input">
+          <button type="button" 
+                  (click)="hidePassword = !hidePassword"
+                  class="password-toggle-btn">
+            <mat-icon class="toggle-icon">{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+        </div>
+        <div class="input-error" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+          Le mot de passe est requis
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div class="error-message" *ngIf="errorMessage" class="animate-fade-in-up">
+        <mat-icon class="error-icon">error</mat-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <!-- Login Button -->
+      <button mat-raised-button 
+              type="submit" 
+              class="login-button animate-fade-in-up"
+              [disabled]="isLoading || loginForm.invalid">
+        <mat-spinner diameter="20" *ngIf="isLoading" class="button-spinner"></mat-spinner>
+        <mat-icon *ngIf="!isLoading" class="button-icon">arrow_forward</mat-icon>
+        <span>{{ isLoading ? 'Connexion...' : 'Se connecter' }}</span>
+      </button>
+    </form>
+
+    <!-- Test Accounts Section -->
+    <div class="test-accounts-section animate-fade-in-up">
+      <mat-divider class="section-divider">
+        <span class="divider-text">Comptes de test</span>
+      </mat-divider>
+      
+      <div class="test-accounts-grid">
+        <button mat-stroked-button 
+                class="test-account-btn"
+                (click)="fillTestAccount('admin', 'admin123')"
+                [disabled]="isLoading">
+          <mat-icon class="test-icon">admin_panel_settings</mat-icon>
+          <span>Admin</span>
+        </button>
+        
+        <button mat-stroked-button 
+                class="test-account-btn"
+                (click)="fillTestAccount('employee', 'employee123')"
+                [disabled]="isLoading">
+          <mat-icon class="test-icon">person</mat-icon>
+          <span>Employé</span>
+        </button>
+        
+        <button mat-stroked-button 
+                class="test-account-btn"
+                (click)="fillTestAccount('manager', 'manager123')"
+                [disabled]="isLoading">
+          <mat-icon class="test-icon">supervisor_account</mat-icon>
+          <span>Manager</span>
+        </button>
+        
+        <button mat-stroked-button 
+                class="test-account-btn"
+                (click)="fillTestAccount('rh', 'rh123')"
+                [disabled]="isLoading">
+          <mat-icon class="test-icon">business</mat-icon>
+          <span>RH</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="login-footer animate-fade-in-up">
+      <p class="footer-text">
+        Système de gestion des congés v2.0
+        <span class="version-badge">Beta</span>
+      </p>
+      <div class="register-link">
+        <span>Pas encore de compte ?</span>
+        <a routerLink="/auth/register" class="register-btn">Créer votre compte</a>
+      </div>
+    </div>
+  </div>
+</div>

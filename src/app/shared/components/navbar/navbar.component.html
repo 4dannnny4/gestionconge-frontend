@@ -1,0 +1,62 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" routerLink="/dashboard">
+      <i class="fas fa-calendar-check me-2"></i> Gestion Congés
+    </a>
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">
+            <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+          </a>
+        </li>
+        
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/demandes" routerLinkActive="active">
+            <i class="fas fa-list me-1"></i> Demandes
+          </a>
+        </li>
+        
+        <!-- Menu pour les employés -->
+        <li class="nav-item" *ngIf="isEmployee()">
+          <a class="nav-link" routerLink="/demandes/create" routerLinkActive="active">
+            <i class="fas fa-calendar-plus me-1"></i> Nouvelle
+          </a>
+        </li>
+        
+        <!-- Menu pour les managers -->
+        <li class="nav-item" *ngIf="isManager()">
+          <a class="nav-link" routerLink="/validation" routerLinkActive="active">
+            <i class="fas fa-check-circle me-1"></i> Validation
+          </a>
+        </li>
+        
+        <!-- Menu pour les RH -->
+        <li class="nav-item" *ngIf="isRH()">
+          <a class="nav-link" routerLink="/rh/dashboard" routerLinkActive="active">
+            <i class="fas fa-chart-line me-1"></i> RH
+          </a>
+        </li>
+        
+        <li class="nav-item" *ngIf="isRH()">
+          <a class="nav-link" routerLink="/reports" routerLinkActive="active">
+            <i class="fas fa-file-pdf me-1"></i> Rapports
+          </a>
+        </li>
+      </ul>
+      
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link logout-link" href="#" (click)="logout(); $event.preventDefault()">
+            <i class="fas fa-sign-out-alt me-1"></i> Déconnexion
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

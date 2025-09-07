@@ -1,0 +1,312 @@
+<div class="rh-dashboard-container">
+  <!-- En-tête du composant -->
+  <div class="rh-dashboard-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="rh-dashboard-title">
+          <mat-icon class="title-icon">dashboard</mat-icon>
+          Tableau de bord RH
+        </h1>
+        <p class="subtitle-text">
+          Vue d'ensemble des demandes de congés et statistiques RH
+        </p>
+      </div>
+      <div class="actions-section">
+        <button mat-stroked-button 
+                (click)="refreshDashboard()" 
+                [disabled]="loading"
+                class="action-btn">
+          <mat-icon>refresh</mat-icon>
+          Actualiser
+        </button>
+        <button mat-raised-button 
+                color="primary"
+                (click)="exportToCSV()" 
+                [disabled]="loading"
+                class="action-btn">
+          <mat-icon>download</mat-icon>
+          CSV
+        </button>
+        <button mat-raised-button 
+                color="warn"
+                (click)="exportDashboardToPDF()" 
+                [disabled]="loading"
+                class="action-btn">
+          <mat-icon>picture_as_pdf</mat-icon>
+          PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message d'erreur -->
+  <mat-card class="error-card" *ngIf="error">
+    <mat-card-content>
+      <div class="error-content">
+        <mat-icon class="error-icon">error</mat-icon>
+        <div class="error-text">
+          <h3>Erreur</h3>
+          <p>{{ error }}</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Indicateur de chargement -->
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner diameter="60"></mat-spinner>
+    <p class="loading-text">Chargement des données...</p>
+  </div>
+
+  <!-- Contenu principal -->
+  <div *ngIf="!loading" class="rh-dashboard-content">
+    
+    <!-- Statistiques principales -->
+    <div class="stats-grid">
+      <mat-card class="stat-card stat-primary">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-info">
+              <span class="stat-number">{{ stats.totalDemandes }}</span>
+              <span class="stat-label">Total demandes</span>
+            </div>
+            <mat-icon class="stat-icon">assignment</mat-icon>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card stat-warning">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-info">
+              <span class="stat-number">{{ stats.demandesEnAttente }}</span>
+              <span class="stat-label">En attente</span>
+            </div>
+            <mat-icon class="stat-icon">pending</mat-icon>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card stat-success">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-info">
+              <span class="stat-number">{{ stats.demandesAcceptees }}</span>
+              <span class="stat-label">Acceptées</span>
+            </div>
+            <mat-icon class="stat-icon">check_circle</mat-icon>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card stat-error">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-info">
+              <span class="stat-number">{{ stats.demandesRejetees }}</span>
+              <span class="stat-label">Rejetées</span>
+            </div>
+            <mat-icon class="stat-icon">cancel</mat-icon>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Statistiques secondaires -->
+    <div class="secondary-stats-grid">
+      <mat-card class="secondary-stat-card">
+        <mat-card-content>
+          <div class="secondary-stat-content">
+            <mat-icon class="secondary-stat-icon">trending_up</mat-icon>
+            <div class="secondary-stat-info">
+              <span class="secondary-stat-number">{{ getAcceptanceRate() }}%</span>
+              <span class="secondary-stat-label">Taux d'acceptation</span>
+              <span class="secondary-stat-detail">{{ stats.demandesAcceptees }} / {{ stats.totalDemandes }} demandes</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="secondary-stat-card">
+        <mat-card-content>
+          <div class="secondary-stat-content">
+            <mat-icon class="secondary-stat-icon">schedule</mat-icon>
+            <div class="secondary-stat-info">
+              <span class="secondary-stat-number">{{ getUtilizationRate() }}%</span>
+              <span class="secondary-stat-label">Taux d'utilisation</span>
+              <span class="secondary-stat-detail">{{ stats.totalJoursUtilises }} / {{ stats.totalJoursUtilises + stats.totalJoursRestants }} jours</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="secondary-stat-card">
+        <mat-card-content>
+          <div class="secondary-stat-content">
+            <mat-icon class="secondary-stat-icon">people</mat-icon>
+            <div class="secondary-stat-info">
+              <span class="secondary-stat-number">{{ stats.totalEmployes }}</span>
+              <span class="secondary-stat-label">Total employés</span>
+              <span class="secondary-stat-detail">Employés actifs</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="charts-grid">
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>pie_chart</mat-icon>
+            Répartition des demandes
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <div *ngIf="chartData.demandesParStatut.data.length > 0; else emptyRepartition">
+              <div class="stat-item" *ngFor="let item of chartData.demandesParStatut.data; let i = index">
+                <div class="stat-color" [style.background-color]="chartData.demandesParStatut.colors[i]"></div>
+                <span class="stat-label">{{ chartData.demandesParStatut.labels[i] }}</span>
+                <span class="stat-value">{{ item }}</span>
+              </div>
+            </div>
+            <ng-template #emptyRepartition>
+              <div class="empty-state">
+                <mat-icon>pie_chart</mat-icon>
+                <h3>Aucune donnée</h3>
+                <p>Pas de demandes de congés disponibles</p>
+              </div>
+            </ng-template>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>bar_chart</mat-icon>
+            Demandes par mois
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <div *ngIf="chartData.demandesParMois.labels.length > 0; else emptyMonths">
+              <div class="month-item" *ngFor="let month of chartData.demandesParMois.labels; let i = index">
+                <span class="month-label">{{ month }}</span>
+                <div class="month-bar">
+                  <div class="month-fill" [style.width.%]="getBarWidth(chartData.demandesParMois.data[i])"></div>
+                </div>
+                <span class="month-value">{{ chartData.demandesParMois.data[i] }}</span>
+              </div>
+            </div>
+            <ng-template #emptyMonths>
+              <div class="empty-state">
+                <mat-icon>bar_chart</mat-icon>
+                <h3>Aucune donnée</h3>
+                <p>Pas de demandes par mois disponibles</p>
+              </div>
+            </ng-template>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Top employés -->
+    <div class="top-employees-grid">
+      <mat-card class="top-employees-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>emoji_events</mat-icon>
+            Top 5 - Jours restants
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="employee-list">
+            <div *ngIf="getTopEmployeesWithRemainingDays().length > 0; else emptyTop5Jours">
+              <div class="employee-item" *ngFor="let item of getTopEmployeesWithRemainingDays()">
+                <div class="employee-info">
+                  <span class="employee-name">{{ item.username }}</span>
+                  <span class="employee-email">{{ item.email }}</span>
+                </div>
+                <mat-chip class="employee-badge">{{ item.joursRestants }} jours</mat-chip>
+              </div>
+            </div>
+            <ng-template #emptyTop5Jours>
+              <div class="empty-state">
+                <mat-icon>emoji_events</mat-icon>
+                <h3>Aucune donnée</h3>
+                <p>Pas de données de soldes disponibles</p>
+              </div>
+            </ng-template>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="top-employees-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>trending_up</mat-icon>
+            Top 5 - Demandes
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="employee-list">
+            <div *ngIf="getTopEmployeesWithRequests().length > 0; else emptyTop5Demandes">
+              <div class="employee-item" *ngFor="let item of getTopEmployeesWithRequests()">
+                <div class="employee-info">
+                  <span class="employee-name">{{ item.username }}</span>
+                  <span class="employee-email">{{ item.email }}</span>
+                </div>
+                <mat-chip class="employee-badge">{{ item.nombreDemandes }} demandes</mat-chip>
+              </div>
+            </div>
+            <ng-template #emptyTop5Demandes>
+              <div class="empty-state">
+                <mat-icon>trending_up</mat-icon>
+                <h3>Aucune donnée</h3>
+                <p>Pas de demandes disponibles</p>
+              </div>
+            </ng-template>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Résumé des soldes -->
+    <mat-card class="summary-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>account_balance_wallet</mat-icon>
+          Résumé des soldes
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <mat-icon class="summary-icon">check_circle</mat-icon>
+            <div class="summary-info">
+              <span class="summary-number">{{ stats.totalJoursUtilises }}</span>
+              <span class="summary-label">Jours utilisés</span>
+            </div>
+          </div>
+          <div class="summary-item">
+            <mat-icon class="summary-icon">schedule</mat-icon>
+            <div class="summary-info">
+              <span class="summary-number">{{ stats.totalJoursRestants }}</span>
+              <span class="summary-label">Jours restants</span>
+            </div>
+          </div>
+          <div class="summary-item">
+            <mat-icon class="summary-icon">calendar_today</mat-icon>
+            <div class="summary-info">
+              <span class="summary-number">{{ stats.totalJoursUtilises + stats.totalJoursRestants }}</span>
+              <span class="summary-label">Total jours</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

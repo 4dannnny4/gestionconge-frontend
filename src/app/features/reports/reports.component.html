@@ -1,0 +1,396 @@
+<div class="reports-container">
+  <!-- En-tête du rapport -->
+  <div class="reports-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="reports-title">
+          <mat-icon class="title-icon">assessment</mat-icon>
+          Rapports et Exports
+        </h1>
+        <p class="reports-subtitle">Générez et exportez des rapports détaillés sur les congés</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message d'erreur -->
+  <mat-card class="error-card" *ngIf="error">
+    <mat-card-content>
+      <div class="error-content">
+        <mat-icon class="error-icon">error</mat-icon>
+        <div class="error-text">
+          <h3>Erreur lors du chargement des données</h3>
+          <p>{{ error }}</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Message de succès -->
+  <mat-card class="success-card" *ngIf="success">
+    <mat-card-content>
+      <div class="success-content">
+        <mat-icon class="success-icon">check_circle</mat-icon>
+        <div class="success-text">
+          <h3>Succès</h3>
+          <p>{{ success }}</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Indicateur de chargement -->
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner diameter="60"></mat-spinner>
+    <p class="loading-text">Génération du rapport en cours...</p>
+  </div>
+
+  <!-- Contenu principal -->
+  <div *ngIf="!loading" class="reports-content">
+    <div class="reports-grid">
+      <!-- Formulaire de génération de rapports -->
+      <div class="config-section">
+        <mat-card class="config-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>settings</mat-icon>
+              Configuration du rapport
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <form [formGroup]="reportForm" (ngSubmit)="generateReport()">
+              <!-- Type de rapport -->
+              <div class="form-section">
+                <h3 class="section-title">Type de rapport</h3>
+                <div class="report-types-container">
+                  <div class="report-type-wrapper" (click)="toggleReportTypeDropdown()">
+                    <mat-icon class="input-icon">assessment</mat-icon>
+                    <div class="report-type-display">
+                      <span *ngIf="!selectedReportType" class="report-type-placeholder">Choisir le type de rapport</span>
+                      <div *ngIf="selectedReportType" class="selected-report-type">
+                        <mat-icon class="selected-report-type-icon">{{ getReportTypeIcon(selectedReportType.value) }}</mat-icon>
+                        <span class="selected-report-type-name">{{ selectedReportType.label }}</span>
+                      </div>
+                    </div>
+                    <mat-icon class="dropdown-arrow" [class.rotated]="showReportTypeDropdown">keyboard_arrow_down</mat-icon>
+                  </div>
+                  
+                  <!-- Dropdown Menu -->
+                  <div class="report-type-dropdown" *ngIf="showReportTypeDropdown">
+                    <div 
+                      *ngFor="let type of reportTypes" 
+                      class="report-type-option"
+                      (click)="selectReportType(type)">
+                      <mat-icon class="report-type-option-icon">{{ getReportTypeIcon(type.value) }}</mat-icon>
+                      <div class="report-type-option-text">
+                        <span class="report-type-name">{{ type.label }}</span>
+                        <span class="report-type-description">{{ getReportTypeDescription(type.value) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Filtres pour les demandes -->
+              <div *ngIf="reportForm.get('reportType')?.value === 'demandes'" class="form-section">
+                <h3 class="section-title">Filtres</h3>
+                <div class="filters-container">
+                  <!-- Statut Filter -->
+                  <div class="filter-container">
+                    <div class="filter-wrapper" (click)="toggleStatutDropdown()">
+                      <mat-icon class="input-icon">flag</mat-icon>
+                      <div class="filter-display">
+                        <span *ngIf="!selectedStatut" class="filter-placeholder">Choisir le statut</span>
+                        <div *ngIf="selectedStatut" class="selected-filter">
+                          <span class="selected-filter-name">{{ selectedStatut.label }}</span>
+                        </div>
+                      </div>
+                      <mat-icon class="dropdown-arrow" [class.rotated]="showStatutDropdown">keyboard_arrow_down</mat-icon>
+                    </div>
+                    
+                    <div class="filter-dropdown" *ngIf="showStatutDropdown">
+                      <div 
+                        *ngFor="let filter of statutFilters" 
+                        class="filter-option"
+                        (click)="selectStatut(filter)">
+                        <span class="filter-option-name">{{ filter.label }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Utilisateur Filter -->
+                  <div class="filter-container">
+                    <div class="filter-wrapper" (click)="toggleUserDropdown()">
+                      <mat-icon class="input-icon">person</mat-icon>
+                      <div class="filter-display">
+                        <span *ngIf="!selectedUser" class="filter-placeholder">Choisir l'utilisateur</span>
+                        <div *ngIf="selectedUser" class="selected-filter">
+                          <span class="selected-filter-name">{{ selectedUser.username || 'Tous les utilisateurs' }}</span>
+                        </div>
+                      </div>
+                      <mat-icon class="dropdown-arrow" [class.rotated]="showUserDropdown">keyboard_arrow_down</mat-icon>
+                    </div>
+                    
+                    <div class="filter-dropdown" *ngIf="showUserDropdown">
+                      <div 
+                        class="filter-option"
+                        (click)="selectUser({id: 'all', username: 'Tous les utilisateurs'})">
+                        <span class="filter-option-name">Tous les utilisateurs</span>
+                      </div>
+                      <div 
+                        *ngFor="let user of users" 
+                        class="filter-option"
+                        (click)="selectUser(user)">
+                        <span class="filter-option-name">{{ user.username }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Date de début -->
+                  <div class="filter-container">
+                    <div class="filter-wrapper date-wrapper">
+                      <mat-icon class="input-icon">event_available</mat-icon>
+                      <input 
+                        type="date" 
+                        formControlName="dateDebut"
+                        class="date-input"
+                        placeholder="Date de début">
+                    </div>
+                  </div>
+
+                  <!-- Date de fin -->
+                  <div class="filter-container">
+                    <div class="filter-wrapper date-wrapper">
+                      <mat-icon class="input-icon">event_busy</mat-icon>
+                      <input 
+                        type="date" 
+                        formControlName="dateFin"
+                        class="date-input"
+                        placeholder="Date de fin">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Filtres pour les rapports mensuels/annuels -->
+              <div *ngIf="reportForm.get('reportType')?.value === 'monthly' || reportForm.get('reportType')?.value === 'annual'" class="form-section">
+                <h3 class="section-title">Période</h3>
+                <div class="filters-grid">
+                  <mat-form-field appearance="outline" class="filter-field" *ngIf="reportForm.get('reportType')?.value === 'monthly'">
+                    <mat-label>Mois</mat-label>
+                    <mat-select formControlName="month">
+                      <mat-option value="0">Janvier</mat-option>
+                      <mat-option value="1">Février</mat-option>
+                      <mat-option value="2">Mars</mat-option>
+                      <mat-option value="3">Avril</mat-option>
+                      <mat-option value="4">Mai</mat-option>
+                      <mat-option value="5">Juin</mat-option>
+                      <mat-option value="6">Juillet</mat-option>
+                      <mat-option value="7">Août</mat-option>
+                      <mat-option value="8">Septembre</mat-option>
+                      <mat-option value="9">Octobre</mat-option>
+                      <mat-option value="10">Novembre</mat-option>
+                      <mat-option value="11">Décembre</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="filter-field">
+                    <mat-label>Année</mat-label>
+                    <mat-select formControlName="year">
+                      <mat-option *ngFor="let year of getYears()" [value]="year">
+                        {{ year }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+              </div>
+
+              <!-- Boutons d'action -->
+              <div class="actions-section">
+                <div class="actions-grid">
+                  <button 
+                    mat-raised-button 
+                    color="primary" 
+                    type="submit"
+                    class="action-button"
+                    [disabled]="reportForm.invalid">
+                    <mat-icon>picture_as_pdf</mat-icon>
+                    Générer PDF
+                  </button>
+                  
+                  <button 
+                    mat-raised-button 
+                    color="accent" 
+                    type="button"
+                    class="action-button"
+                    (click)="exportToCSV()"
+                    [disabled]="reportForm.get('reportType')?.value === 'dashboard'">
+                    <mat-icon>table_chart</mat-icon>
+                    Exporter CSV
+                  </button>
+                  
+                  <button 
+                    mat-stroked-button 
+                    color="primary" 
+                    type="button"
+                    class="action-button"
+                    (click)="refreshData()">
+                    <mat-icon>refresh</mat-icon>
+                    Actualiser
+                  </button>
+                </div>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Statistiques rapides -->
+      <div class="stats-section">
+        <mat-card class="stats-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>analytics</mat-icon>
+              Statistiques rapides
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="stats-grid">
+              <div class="stat-item stat-primary">
+                <div class="stat-number">{{ demandes.length }}</div>
+                <div class="stat-label">Total demandes</div>
+              </div>
+              <div class="stat-item stat-warning">
+                <div class="stat-number">{{ getDemandesEnAttente() }}</div>
+                <div class="stat-label">En attente</div>
+              </div>
+              <div class="stat-item stat-success">
+                <div class="stat-number">{{ getDemandesAcceptees() }}</div>
+                <div class="stat-label">Acceptées</div>
+              </div>
+              <div class="stat-item stat-error">
+                <div class="stat-number">{{ getDemandesRejetees() }}</div>
+                <div class="stat-label">Rejetées</div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Aide -->
+        <mat-card class="help-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>help</mat-icon>
+              Aide
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="help-content">
+              <div class="help-item">
+                <mat-icon class="help-icon">picture_as_pdf</mat-icon>
+                <div class="help-text">
+                  <strong>PDF :</strong> Rapport formaté avec graphiques et tableaux
+                </div>
+              </div>
+              <div class="help-item">
+                <mat-icon class="help-icon">table_chart</mat-icon>
+                <div class="help-text">
+                  <strong>CSV :</strong> Données brutes pour Excel/Google Sheets
+                </div>
+              </div>
+              <div class="help-item">
+                <mat-icon class="help-icon">dashboard</mat-icon>
+                <div class="help-text">
+                  <strong>Tableau de bord :</strong> Capture d'écran du dashboard RH
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Aperçu des données -->
+    <div class="preview-section" *ngIf="reportForm.get('reportType')?.value === 'demandes'">
+      <mat-card class="preview-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>visibility</mat-icon>
+            Aperçu des données
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="table-container">
+            <table mat-table [dataSource]="getFilteredDemandes() | slice:0:10" class="modern-table">
+              <!-- Utilisateur Column -->
+              <ng-container matColumnDef="utilisateur">
+                <th mat-header-cell *matHeaderCellDef>Utilisateur</th>
+                <td mat-cell *matCellDef="let demande">{{ getUserName(demande.userId!) }}</td>
+              </ng-container>
+
+              <!-- Type Column -->
+              <ng-container matColumnDef="type">
+                <th mat-header-cell *matHeaderCellDef>Type</th>
+                <td mat-cell *matCellDef="let demande">
+                  <div class="type-cell">
+                    <mat-icon class="type-icon">event</mat-icon>
+                    {{ demande.type.nom || 'N/A' }}
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Date début Column -->
+              <ng-container matColumnDef="dateDebut">
+                <th mat-header-cell *matHeaderCellDef>Date début</th>
+                <td mat-cell *matCellDef="let demande">
+                  <div class="date-cell">
+                    <mat-icon class="date-icon">event_available</mat-icon>
+                    {{ demande.dateDebut | date:'dd/MM/yyyy' }}
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Date fin Column -->
+              <ng-container matColumnDef="dateFin">
+                <th mat-header-cell *matHeaderCellDef>Date fin</th>
+                <td mat-cell *matCellDef="let demande">
+                  <div class="date-cell">
+                    <mat-icon class="date-icon">event_busy</mat-icon>
+                    {{ demande.dateFin | date:'dd/MM/yyyy' }}
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Statut Column -->
+              <ng-container matColumnDef="statut">
+                <th mat-header-cell *matHeaderCellDef>Statut</th>
+                <td mat-cell *matCellDef="let demande">
+                  <mat-chip [class]="getStatusChipClass(demande.statut!)">
+                    <mat-icon matChipAvatar>{{ getStatusIcon(demande.statut!) }}</mat-icon>
+                    {{ getStatusText(demande.statut!) }}
+                  </mat-chip>
+                </td>
+              </ng-container>
+
+              <!-- Commentaire Column -->
+              <ng-container matColumnDef="commentaire">
+                <th mat-header-cell *matHeaderCellDef>Commentaire</th>
+                <td mat-cell *matCellDef="let demande">
+                  <div class="comment-cell">
+                    {{ demande.commentaire || '-' }}
+                  </div>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="previewColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: previewColumns;" class="table-row"></tr>
+            </table>
+          </div>
+          <div *ngIf="getFilteredDemandes().length > 10" class="preview-info">
+            <mat-icon>info</mat-icon>
+            <span>Affichage des 10 premiers résultats sur {{ getFilteredDemandes().length }} au total</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
